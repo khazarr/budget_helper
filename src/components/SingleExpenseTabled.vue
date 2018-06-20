@@ -1,7 +1,7 @@
 <template>
   <tr v-show="include && !isSelfTransfer">
     <td>{{date | dateNormalize}} {{description | trimmer}} </td>
-    <td>{{ammount}}</td>
+    <td>{{ammount | abs}}</td>
   </tr>
 </template>
 
@@ -32,6 +32,11 @@ export default {
     dateNormalize(val) {
       const dateArr = val.slice(5).split('-')
       return `${dateArr[1]}/${dateArr[0]}`
+    },
+    abs(val) {
+      const abs =  Math.abs(Number(val.replace(',','.')))
+      
+      return String(abs).replace('.',',')
     }
   }
 };

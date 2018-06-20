@@ -117,6 +117,12 @@ export default {
   box-shadow:0 0 3px black,0 0 10px black;
 }
 
+@media (max-width: 500px;) {
+.custom-file-input {
+  max-width: 250px;
+  min-width: 100px;
+}
+}
 /* file input start */
 .custom-file-input {
   display:inline-block;
