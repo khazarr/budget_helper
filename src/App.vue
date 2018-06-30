@@ -4,7 +4,7 @@
 
       <section id="file-form">
         <form  enctype="multipart/form-data">
-          <h1>Mbank budget helper</h1>
+          <h1>Budget helper</h1>
       
             <!-- <input id="csv" type="file" /> -->
             <div class="custom-file-input">
@@ -29,14 +29,20 @@
           :include = data.include
         />
       </table>
-      <!-- <SingleExpense
-      v-for="(data, index) in getUploadedData"
-      :key = index
-      :date = data.date
-      :description = data.description
-      :ammount = data.ammount
-      :include = data.include
-       /> -->
+      <table v-show="ingParsedData">
+        <tr>
+          <th>Description</th>
+          <th>Ammount</th>
+        </tr>
+        <SingleExpenseTabledIng 
+          v-for="(data, index) in ingParsedData"
+          :key = index
+          :date = data.date
+          :description = data.description
+          :ammount = data.ammount
+          :include = data.include
+        />
+      </table>
     </div>
   </div>
 </template>
@@ -45,17 +51,21 @@
 /* eslint-disable */
 import SingleExpense from "./components/SingleExpense.vue";
 import SingleExpenseTabled from "./components/SingleExpenseTabled.vue";
+import SingleExpenseTabledIng from "./components/SingleExpenseTabledIng.vue";
+import Papa from 'papaparse';
 import { mapGetters } from 'vuex'
 
 export default {
   name: "app",
   components: {
     SingleExpense,
-    SingleExpenseTabled
+    SingleExpenseTabled,
+    SingleExpenseTabledIng
   },
   data () {
     return {
-      displayFileName: ''
+      displayFileName: '',
+      ingParsedData: null
     }
   },
   computed: {
@@ -67,10 +77,48 @@ export default {
   methods: {
     onFileInputChange(e) {
       console.log('czendż')
-      console.log(e.target.files[0])
-      this.displayFileName = e.target.files[0].name
-      console.log(e.target)
-      this.onProcessHtmlFile()
+      const fileToManipulate = e.target.files[0]
+      this.displayFileName = fileToManipulate.name
+      console.log(fileToManipulate)
+
+      if (fileToManipulate.type.includes('html')) {
+        this.onProcessHtmlFile()
+      }
+
+      if (fileToManipulate.type.includes('ms-excel')) {
+        console.log('wchodze t')
+        this.onProcessCSVFile()
+      }
+    },
+    onProcessCSVFile() {
+      var that = this
+      const csvInput = document.querySelector("#csv");
+      const fileToLoad = csvInput.files[0];
+      console.log(Papa.parse(fileToLoad, {
+        before() {
+          console.log('startuje')
+        },
+        complete(result) {
+          console.log('koniecz')
+          // console.log(result)
+          console.log(result.data.slice(21))
+          const dataSliced = result.data.slice(21)
+          const ingOutput = []
+          dataSliced.map(dataChunk => {
+            // ["description", "ammount","include","date"]
+            ingOutput.push({
+              // description: `${dataChunk[2]} | ${dataChunk[3]}`,
+              description: `${dataChunk[2]}`,
+              ammount: dataChunk[8] ? dataChunk[8] : dataChunk[10],
+              include: true,
+              date: dataChunk[0]
+            })
+          })
+          console.log(ingOutput)
+          that.ingParsedData = ingOutput
+          
+        }
+      }))
     },
     onProcessHtmlFile() {
       var that = this
